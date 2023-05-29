@@ -242,6 +242,10 @@
     "swap": "Swap",
     "vote": "Vote"
   },
+  "obi": {
+    "smartaccount": "Osmosis Smart Account",
+    "smartaccountDescrip":"Obi non-custodial account abstraction"
+  },
   "pool": {
     "24hrTradingVolume": "24h Trading volume",
     "7davg": "(7d avg)",

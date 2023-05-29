@@ -97,6 +97,24 @@ export const KeplrConnectionSelectModal: FunctionComponent<
           <p className="body2 mt-1 text-osmoverse-400">{t("keplr.mobile")}</p>
         </div>
       </button>
+      <button
+        className="mt-5 flex items-center rounded-2xl bg-osmoverse-900 p-5 transition-colors hover:bg-osmoverse-700"
+        onClick={(e) => {
+          e.preventDefault();
+          onSelectExtension();
+        }}
+      >
+        <Image
+          src="/icons/smartaccount.svg"
+          alt="osmosis smart account logo"
+          width={64}
+          height={64}
+        />
+        <div className="ml-5 flex flex-col text-left">
+          <h6>{t("obi.smartaccount")}</h6>
+          <p className="body2 mt-1 text-osmoverse-400">{t("obi.smartaccountDescrip")}</p>
+        </div>
+      </button>
       <div className="mt-5 rounded-2xl bg-osmoverse-700 p-5">
         <p className="caption text-white-mid">
           {t("connectDisclaimer")}{" "}
