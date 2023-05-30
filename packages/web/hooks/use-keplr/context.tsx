@@ -249,6 +249,16 @@ export const GetKeplrProvider: FunctionComponent = ({ children }) => {
           }
         });
 
+        eventListener.on("select_smart_account", () => {
+          setIsExtensionSelectionModalOpen(false);
+          // @ts-expect-error
+          window["openObiModal"]();
+          setUserProperty("isWalletConnected", true);
+          setUserProperty("connectedWallet", "smart-account");
+          resolve(undefined);
+          cleanUp();
+        });
+
         if (isMobile()) {
           if (keplrFromWindow && keplrFromWindow.mode === "mobile-web") {
             // If mobile with `keplr` in `window`, it means that user enters frontend from keplr app's in app browser.
@@ -301,6 +311,9 @@ export const GetKeplrProvider: FunctionComponent = ({ children }) => {
         }}
         onSelectWalletConnect={() => {
           eventListener.emit("select_wallet_connect");
+        }}
+        onSelectSmartAccount={() => {
+          eventListener.emit("select_smart_account");
         }}
       />
       <WalletConnectQRModal

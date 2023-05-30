@@ -18,6 +18,7 @@ import {
 import { Bounce, ToastContainer } from "react-toastify";
 
 import { Icon } from "~/components/assets";
+import { ObiModal } from "~/obi-modal";
 
 import { MainLayout } from "../components/layouts";
 import { OgpMeta } from "../components/ogp-meta";
@@ -116,6 +117,7 @@ function MyApp({ Component, pageProps }: AppProps) {
   }, [t]);
 
   useAmplitudeAnalytics({ init: true });
+
   return (
     <GetKeplrProvider>
       <StoreProvider>
@@ -140,6 +142,7 @@ function MyApp({ Component, pageProps }: AppProps) {
         <MainLayout menus={menus}>
           <Component {...pageProps} />
         </MainLayout>
+        <ObiModal />
       </StoreProvider>
     </GetKeplrProvider>
   );

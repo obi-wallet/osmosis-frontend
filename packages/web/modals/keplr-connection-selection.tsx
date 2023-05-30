@@ -9,6 +9,7 @@ export const KeplrConnectionSelectModal: FunctionComponent<
     overrideWithKeplrInstallLink?: string;
     onSelectExtension: () => void;
     onSelectWalletConnect: () => void;
+    onSelectSmartAccount: () => void;
   }
 > = ({
   isOpen,
@@ -16,6 +17,7 @@ export const KeplrConnectionSelectModal: FunctionComponent<
   overrideWithKeplrInstallLink,
   onSelectExtension,
   onSelectWalletConnect,
+  onSelectSmartAccount,
 }) => {
   const t = useTranslation();
   return (
@@ -101,7 +103,7 @@ export const KeplrConnectionSelectModal: FunctionComponent<
         className="mt-5 flex items-center rounded-2xl bg-osmoverse-900 p-5 transition-colors hover:bg-osmoverse-700"
         onClick={(e) => {
           e.preventDefault();
-          onSelectExtension();
+          onSelectSmartAccount();
         }}
       >
         <Image
@@ -112,7 +114,9 @@ export const KeplrConnectionSelectModal: FunctionComponent<
         />
         <div className="ml-5 flex flex-col text-left">
           <h6>{t("obi.smartaccount")}</h6>
-          <p className="body2 mt-1 text-osmoverse-400">{t("obi.smartaccountDescrip")}</p>
+          <p className="body2 mt-1 text-osmoverse-400">
+            {t("obi.smartaccountDescrip")}
+          </p>
         </div>
       </button>
       <div className="mt-5 rounded-2xl bg-osmoverse-700 p-5">
