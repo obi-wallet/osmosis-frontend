@@ -1,6 +1,5 @@
 import "../styles/globals.css";
 import "react-toastify/dist/ReactToastify.css"; // some styles overridden in globals.css
-
 import dayjs from "dayjs";
 import duration from "dayjs/plugin/duration";
 import relativeTime from "dayjs/plugin/relativeTime";
@@ -18,7 +17,7 @@ import {
 import { Bounce, ToastContainer } from "react-toastify";
 
 import { Icon } from "~/components/assets";
-import { ObiModal } from "~/obi-modal";
+import { ObiModalProvider } from "~/obi-modal";
 
 import { MainLayout } from "../components/layouts";
 import { OgpMeta } from "../components/ogp-meta";
@@ -119,32 +118,33 @@ function MyApp({ Component, pageProps }: AppProps) {
   useAmplitudeAnalytics({ init: true });
 
   return (
-    <GetKeplrProvider>
-      <StoreProvider>
-        <Head>
-          {/* metamask Osmosis app icon */}
-          <link
-            rel="shortcut icon"
-            href={`${
-              typeof window !== "undefined" ? window.origin : ""
-            }/osmosis-logo-wc.png`}
+    <ObiModalProvider>
+      <GetKeplrProvider>
+        <StoreProvider>
+          <Head>
+            {/* metamask Osmosis app icon */}
+            <link
+              rel="shortcut icon"
+              href={`${
+                typeof window !== "undefined" ? window.origin : ""
+              }/osmosis-logo-wc.png`}
+            />
+            <link rel="preload" as="image/svg+xml" href={spriteSVGURL} />
+          </Head>
+          <OgpMeta />
+          <IbcNotifier />
+          <ToastContainer
+            toastStyle={{
+              backgroundColor: IS_FRONTIER ? "#2E2C2F" : "#2d2755",
+            }}
+            transition={Bounce}
           />
-          <link rel="preload" as="image/svg+xml" href={spriteSVGURL} />
-        </Head>
-        <OgpMeta />
-        <IbcNotifier />
-        <ToastContainer
-          toastStyle={{
-            backgroundColor: IS_FRONTIER ? "#2E2C2F" : "#2d2755",
-          }}
-          transition={Bounce}
-        />
-        <MainLayout menus={menus}>
-          <Component {...pageProps} />
-        </MainLayout>
-        <ObiModal />
-      </StoreProvider>
-    </GetKeplrProvider>
+          <MainLayout menus={menus}>
+            <Component {...pageProps} />
+          </MainLayout>
+        </StoreProvider>
+      </GetKeplrProvider>
+    </ObiModalProvider>
   );
 }
 

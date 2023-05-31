@@ -774,9 +774,88 @@ export class OsmosisAccountImpl {
     memo: string = "",
     stdFee: Partial<StdFee> = {},
     signOptions?: KeplrSignOptions,
-    onFulfill?: (tx: any) => void
+    onFulfill?: (tx: any) => void,
+    sender: string
   ) {
     const queries = this.queries;
+
+    const getMessages = async () => {
+      // get pool info and refetch
+      const queryPool = queries.queryGammPools.getPool(poolId);
+      if (!queryPool) {
+        throw new Error(`Pool #${poolId} not found`);
+      }
+      const pool = queryPool.pool;
+
+      // reconcile weighted and stable pool asset data
+      const inPoolAsset = queryPool.getPoolAsset(
+        tokenIn.currency.coinMinimalDenom
+      );
+      const outPoolAsset = queryPool.getPoolAsset(
+        tokenOutCurrency.coinMinimalDenom
+      );
+      const inPoolAssetWeight = queryPool.weightedPoolInfo?.assets.find(
+        ({ denom }) => denom === inPoolAsset.amount.currency.coinMinimalDenom
+      )?.weight;
+      const outPoolAssetWeight = queryPool.weightedPoolInfo?.assets.find(
+        ({ denom }) => denom === outPoolAsset.amount.currency.coinMinimalDenom
+      )?.weight;
+      const poolAssets = queryPool.stableSwapInfo
+        ? queryPool.stableSwapInfo.assets
+        : [];
+
+      const msg = Msgs.Amino.makeSwapExactAmountInMsg(
+        {
+          // ...pool, <= does not work w/ getters
+          id: pool.id,
+          swapFee: pool.swapFee,
+          inPoolAsset: {
+            ...inPoolAsset.amount.currency,
+            amount: new Int(inPoolAsset.amount.toCoin().amount),
+            weight: inPoolAssetWeight
+              ? new Int(inPoolAssetWeight.toDec().truncate().toString())
+              : undefined,
+          },
+          outPoolAsset: {
+            denom: outPoolAsset.amount.currency.coinMinimalDenom,
+            amount: new Int(outPoolAsset.amount.toCoin().amount),
+            weight: outPoolAssetWeight
+              ? new Int(outPoolAssetWeight.toDec().truncate().toString())
+              : undefined,
+          },
+          poolAssets,
+        },
+        this._msgOpts.swapExactAmountIn,
+        sender,
+        tokenIn,
+        tokenOutCurrency,
+        maxSlippage
+      );
+
+      return {
+        aminoMsgs: [msg],
+        protoMsgs: [
+          {
+            typeUrl: "/osmosis.gamm.v1beta1.MsgSwapExactAmountIn",
+            value: osmosis.gamm.v1beta1.MsgSwapExactAmountIn.encode({
+              sender: msg.value.sender,
+              routes: msg.value.routes.map(
+                (route: { pool_id: string; token_out_denom: string }) => {
+                  return {
+                    poolId: Long.fromString(route.pool_id),
+                    tokenOutDenom: route.token_out_denom,
+                  };
+                }
+              ),
+              tokenIn: msg.value.token_in,
+              tokenOutMinAmount: msg.value.token_out_min_amount,
+            }).finish(),
+          },
+        ],
+      };
+    };
+
+    return await getMessages();
 
     await this.base.cosmos.sendMsgs(
       "swapExactAmountIn",

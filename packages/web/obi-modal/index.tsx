@@ -1,24 +1,80 @@
-import { useEffect, useState } from "react";
+import {
+  createContext,
+  ReactNode,
+  useContext,
+  useEffect,
+  useRef,
+  useState,
+} from "react";
 
-export function ObiModal() {
+export const ObiModalContext = createContext<{
+  currentAddress: string | null;
+
+  openModal(): void;
+  closeModal(): void;
+  signAndBroadcastTransaction(messages: unknown[]): Promise<unknown>;
+}>(null!);
+
+export function useObiModal() {
+  return useContext(ObiModalContext);
+}
+
+export function ObiModalProvider({ children }: { children: ReactNode }) {
+  const [currentAddress, setCurrentAddress] = useState<string | null>(null);
   const [obiModalOpen, setObiModalOpen] = useState(false);
+  const iframeRef = useRef<HTMLIFrameElement>(null);
+  const resolveRef = useRef<((value: unknown) => void) | null>(null);
+
   useEffect(() => {
-    if (typeof window !== "undefined") {
-      // @ts-expect-error
-      window["toggleObiModal"] = () => {
-        setObiModalOpen((v) => !v);
-      };
-      // @ts-expect-error
-      window["openObiModal"] = () => {
-        setObiModalOpen(true);
-      };
+    function listener(event: MessageEvent) {
+      switch (event.data?.type) {
+        case "@obi/sign-and-broadcast-transaction-response":
+          resolveRef.current?.(event.data.payload);
+          resolveRef.current = null;
+          setObiModalOpen(false);
+          break;
+        case "@obi/current-wallet":
+          setCurrentAddress(event.data.address);
+          break;
+      }
     }
-  });
+    window.addEventListener("message", listener, false);
+    return () => {
+      window.removeEventListener("message", listener);
+    };
+  }, []);
+
+  const iframeUrl = `https://obi-wallet-internal-git-feature-modal-obi-money.vercel.app`;
+  // const iframeUrl = `http://localhost:4400`;
 
   return (
-    <>
+    <ObiModalContext.Provider
+      value={{
+        currentAddress,
+        openModal() {
+          setObiModalOpen(true);
+        },
+        closeModal() {
+          setObiModalOpen(false);
+        },
+        async signAndBroadcastTransaction(messages) {
+          return await new Promise((resolve) => {
+            setObiModalOpen(true);
+            resolveRef.current = resolve;
+            iframeRef.current?.contentWindow?.postMessage(
+              {
+                type: "@obi/sign-and-broadcast-transaction",
+                payload: messages,
+              },
+              "*"
+            );
+          });
+        },
+      }}
+    >
+      {children}
       <iframe
-        src="https://obi-wallet-internal-git-feature-modal-obi-money.vercel.app/iframe.html?id=modal--primary&viewMode=story"
+        src={`${iframeUrl}/iframe.html?id=modal--primary&viewMode=story`}
         style={{
           position: "fixed",
           width: "390px",
@@ -30,6 +86,7 @@ export function ObiModal() {
           marginTop: "-422px",
           visibility: obiModalOpen ? "visible" : "hidden",
         }}
+        ref={iframeRef}
       />
       <button
         onClick={() => {
@@ -47,6 +104,6 @@ export function ObiModal() {
       >
         X
       </button>
-    </>
+    </ObiModalContext.Provider>
   );
 }

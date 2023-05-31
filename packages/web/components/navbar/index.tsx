@@ -23,6 +23,7 @@ import IconButton from "../buttons/icon-button";
 import { MainMenu } from "../main-menu";
 import { Popover } from "../popover";
 import { CustomClasses, MainLayoutMenu } from "../types";
+import { useObiModal } from "~/obi-modal";
 
 export const NavBar: FunctionComponent<
   {
@@ -211,7 +212,8 @@ const WalletInfo: FunctionComponent<
 
   // wallet
   const account = accountStore.getAccount(chainId);
-  const walletConnected = account.walletStatus === WalletStatus.Loaded;
+  const obiModal = useObiModal();
+  const walletConnected = obiModal.currentAddress !== null;
 
   return (
     <div className={className}>
@@ -229,7 +231,8 @@ const WalletInfo: FunctionComponent<
         <button
           onClick={(e) => {
             e.stopPropagation();
-            onOpenProfile();
+            obiModal.openModal();
+            // onOpenProfile();
           }}
           className="group flex place-content-between items-center gap-[13px] rounded-xl border border-osmoverse-700 px-1.5 py-1 hover:border-[1.3px] hover:border-wosmongton-300 hover:bg-osmoverse-800 md:w-full"
         >
@@ -255,7 +258,7 @@ const WalletInfo: FunctionComponent<
             <span className="body2 font-bold leading-4" title={icnsName}>
               {Boolean(icnsName)
                 ? formatICNSName(icnsName)
-                : getShortAddress(account.bech32Address)}
+                : getShortAddress(obiModal.currentAddress!)}
             </span>
             <span className="caption font-medium tracking-wider text-osmoverse-200">
               {navBarStore.walletInfo.balance.toString()}

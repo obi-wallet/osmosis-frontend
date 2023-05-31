@@ -37,6 +37,7 @@ import { tError } from "../localization";
 import { Popover } from "../popover";
 import { InfoTooltip } from "../tooltip";
 import TradeRoute from "./trade-route";
+import { useObiModal } from "~/obi-modal";
 
 export const TradeClipboard: FunctionComponent<{
   // IMPORTANT: Pools should be memoized!!
@@ -73,6 +74,8 @@ export const TradeClipboard: FunctionComponent<{
 
     const account = accountStore.getAccount(chainId);
     const queries = queriesStore.get(chainId);
+    const obiModal = useObiModal();
+    const walletConnected = obiModal.currentAddress !== null;
 
     const manualSlippageInputRef = useRef<HTMLInputElement | null>(null);
     const [
@@ -84,7 +87,7 @@ export const TradeClipboard: FunctionComponent<{
     const tradeTokenInConfig = useTradeTokenInConfig(
       chainStore,
       chainId,
-      account.bech32Address,
+      obiModal.currentAddress ?? "",
       queriesStore,
       pools
     );
@@ -352,9 +355,9 @@ export const TradeClipboard: FunctionComponent<{
 
     // user action
     const swap = async () => {
-      if (account.walletStatus !== WalletStatus.Loaded) {
-        return account.init();
-      }
+      // if (account.walletStatus !== WalletStatus.Loaded) {
+      //   return account.init();
+      // }
       if (tradeTokenInConfig.optimizedRoutePaths.length > 0) {
         const routePools: {
           poolId: string;
@@ -427,7 +430,7 @@ export const TradeClipboard: FunctionComponent<{
             },
           ]);
           if (routePools.length === 1) {
-            await account.osmosis.sendSwapExactAmountInMsg(
+            const msgs = await account.osmosis.sendSwapExactAmountInMsg(
               routePools[0].poolId,
               tokenIn,
               routePools[0].tokenOutCurrency,
@@ -454,36 +457,55 @@ export const TradeClipboard: FunctionComponent<{
                     isMultiHop: false,
                   },
                 ]);
-              }
-            );
-          } else {
-            await account.osmosis.sendMultihopSwapExactAmountInMsg(
-              routePools,
-              tokenIn,
-              maxSlippage,
-              "",
-              {
-                amount: [
-                  {
-                    denom: chainStore.osmosis.stakeCurrency.coinMinimalDenom,
-                    amount: "0",
-                  },
-                ],
               },
-              undefined,
-              () => {
-                logEvent([
-                  EventName.Swap.swapCompleted,
-                  {
-                    fromToken: tradeTokenInConfig.sendCurrency.coinDenom,
-                    tokenAmount: Number(tokenIn.amount),
-                    toToken: tradeTokenInConfig.outCurrency.coinDenom,
-                    isOnHome: !isInModal,
-                    isMultiHop: true,
-                  },
-                ]);
-              }
+              obiModal.currentAddress ?? ""
             );
+            const response = await obiModal.signAndBroadcastTransaction(
+              msgs.aminoMsgs.map((msg) => {
+                return { osmo: msg };
+              })
+            );
+            console.log(response)
+            logEvent([
+              EventName.Swap.swapCompleted,
+              {
+                fromToken: tradeTokenInConfig.sendCurrency.coinDenom,
+                tokenAmount: Number(tokenIn.amount),
+                toToken: tradeTokenInConfig.outCurrency.coinDenom,
+                isOnHome: !isInModal,
+
+                isMultiHop: false,
+              },
+            ]);
+          } else {
+            // TODO:
+            // await account.osmosis.sendMultihopSwapExactAmountInMsg(
+            //   routePools,
+            //   tokenIn,
+            //   maxSlippage,
+            //   "",
+            //   {
+            //     amount: [
+            //       {
+            //         denom: chainStore.osmosis.stakeCurrency.coinMinimalDenom,
+            //         amount: "0",
+            //       },
+            //     ],
+            //   },
+            //   undefined,
+            //   () => {
+            //     logEvent([
+            //       EventName.Swap.swapCompleted,
+            //       {
+            //         fromToken: tradeTokenInConfig.sendCurrency.coinDenom,
+            //         tokenAmount: Number(tokenIn.amount),
+            //         toToken: tradeTokenInConfig.outCurrency.coinDenom,
+            //         isOnHome: !isInModal,
+            //         isMultiHop: true,
+            //       },
+            //     ]);
+            //   }
+            // );
           }
           tradeTokenInConfig.setAmount("");
           tradeTokenInConfig.setFraction(undefined);
@@ -688,7 +710,7 @@ export const TradeClipboard: FunctionComponent<{
                 </span>
                 <span className="caption ml-1.5 text-sm text-wosmongton-300 md:text-xs">
                   {queries.queryBalances
-                    .getQueryBech32Address(account.bech32Address)
+                    .getQueryBech32Address(obiModal.currentAddress ?? "")
                     .getBalanceFromCurrency(tradeTokenInConfig.sendCurrency)
                     .trim(true)
                     .hideDenom(true)
@@ -1132,20 +1154,19 @@ export const TradeClipboard: FunctionComponent<{
         {swapButton ?? (
           <Button
             mode={
-              showPriceImpactWarning &&
-              account.walletStatus === WalletStatus.Loaded
+              showPriceImpactWarning && walletConnected
                 ? "primary-warning"
                 : "primary"
             }
             disabled={
-              account.walletStatus === WalletStatus.Loaded &&
+              walletConnected &&
               (tradeTokenInConfig.error !== undefined ||
                 tradeTokenInConfig.optimizedRoutePaths.length === 0 ||
                 account.txTypeInProgress !== "")
             }
             onClick={swap}
           >
-            {account.walletStatus === WalletStatus.Loaded ? (
+            {walletConnected ? (
               tradeTokenInConfig.error ? (
                 t(...tError(tradeTokenInConfig.error))
               ) : showPriceImpactWarning ? (
