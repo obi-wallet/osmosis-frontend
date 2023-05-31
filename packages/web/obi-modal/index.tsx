@@ -73,6 +73,21 @@ export function ObiModalProvider({ children }: { children: ReactNode }) {
       }}
     >
       {children}
+      <div
+        style={
+          obiModalOpen
+            ? {
+                backgroundColor: "rgba(0, 0, 0, 0.5)",
+                position: "fixed",
+                width: "100vw",
+                height: "100vh",
+                zIndex: 900,
+                left: 0,
+                top: 0,
+              }
+            : undefined
+        }
+      />
       <iframe
         src={`${iframeUrl}/iframe.html?id=modal--primary&viewMode=story`}
         style={{
