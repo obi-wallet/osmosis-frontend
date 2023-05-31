@@ -18,6 +18,7 @@ import WalletConnect from "@walletconnect/client";
 import { KeplrWalletConnectV1 } from "@keplr-wallet/wc-client";
 import { isMobile } from "@walletconnect/browser-utils";
 import { useAmplitudeAnalytics } from "../use-amplitude-analytics";
+import { useObiModal } from "~/obi-modal";
 
 export async function sendTxWC(
   chainId: string,
@@ -81,6 +82,7 @@ export const GetKeplrProvider: FunctionComponent = ({ children }) => {
   const [isExtentionNotInstalled, setIsExtensionNotInstalled] = useState(false);
   const [wcUri, setWCUri] = useState("");
   const { setUserProperty } = useAmplitudeAnalytics();
+  const obiModal = useObiModal();
 
   const lastUsedKeplrRef = useRef<Keplr | undefined>();
   const defaultConnectionTypeRef = useRef<
@@ -251,8 +253,7 @@ export const GetKeplrProvider: FunctionComponent = ({ children }) => {
 
         eventListener.on("select_smart_account", () => {
           setIsExtensionSelectionModalOpen(false);
-          // @ts-expect-error
-          window["openObiModal"]();
+          obiModal.openModal();
           setUserProperty("isWalletConnected", true);
           setUserProperty("connectedWallet", "smart-account");
           resolve(undefined);
