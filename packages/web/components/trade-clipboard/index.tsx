@@ -1,4 +1,3 @@
-import { WalletStatus } from "@keplr-wallet/stores";
 import { AppCurrency, Currency } from "@keplr-wallet/types";
 import { CoinPretty, Dec, DecUtils } from "@keplr-wallet/unit";
 import { Pool } from "@osmosis-labs/pools";
@@ -17,6 +16,8 @@ import {
 } from "react";
 import { useTranslation } from "react-multi-lang";
 import { useLatest, useMeasure } from "react-use";
+
+import { useObiModal } from "~/obi-modal";
 
 import { EventName } from "../../config";
 import {
@@ -37,7 +38,6 @@ import { tError } from "../localization";
 import { Popover } from "../popover";
 import { InfoTooltip } from "../tooltip";
 import TradeRoute from "./trade-route";
-import { useObiModal } from "~/obi-modal";
 
 export const TradeClipboard: FunctionComponent<{
   // IMPORTANT: Pools should be memoized!!
@@ -465,7 +465,7 @@ export const TradeClipboard: FunctionComponent<{
                 return { osmo: msg };
               })
             );
-            console.log(response)
+            console.log(response);
             logEvent([
               EventName.Swap.swapCompleted,
               {

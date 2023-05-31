@@ -773,8 +773,8 @@ export class OsmosisAccountImpl {
     maxSlippage: string = "0",
     memo: string = "",
     stdFee: Partial<StdFee> = {},
-    signOptions?: KeplrSignOptions,
-    onFulfill?: (tx: any) => void,
+    signOptions: KeplrSignOptions | undefined,
+    onFulfill: (tx: any) => void,
     sender: string
   ) {
     const queries = this.queries;

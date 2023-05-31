@@ -1,10 +1,11 @@
-import { WalletStatus } from "@keplr-wallet/stores";
 import classNames from "classnames";
 import { observer } from "mobx-react-lite";
 import Image from "next/image";
 import { useRouter } from "next/router";
 import { Fragment, FunctionComponent, useEffect, useRef } from "react";
 import { useTranslation } from "react-multi-lang";
+
+import { useObiModal } from "~/obi-modal";
 
 import { Announcement, EventName, IS_FRONTIER } from "../../config";
 import {
@@ -23,7 +24,6 @@ import IconButton from "../buttons/icon-button";
 import { MainMenu } from "../main-menu";
 import { Popover } from "../popover";
 import { CustomClasses, MainLayoutMenu } from "../types";
-import { useObiModal } from "~/obi-modal";
 
 export const NavBar: FunctionComponent<
   {
@@ -197,7 +197,7 @@ export const NavBar: FunctionComponent<
 
 const WalletInfo: FunctionComponent<
   CustomClasses & { onOpenProfile: () => void; icnsName?: string }
-> = observer(({ className, onOpenProfile, icnsName }) => {
+> = observer(({ className, icnsName }) => {
   const {
     chainStore: {
       osmosis: { chainId },
