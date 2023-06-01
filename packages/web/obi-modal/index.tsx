@@ -90,6 +90,7 @@ export function ObiModalProvider({ children }: { children: ReactNode }) {
       />
       <iframe
         src={`${iframeUrl}/iframe.html?id=modal--primary&viewMode=story`}
+        allow="clipboard-write"
         style={{
           position: "fixed",
           width: "390px",
