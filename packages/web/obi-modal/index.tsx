@@ -28,6 +28,9 @@ export function ObiModalProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     function listener(event: MessageEvent) {
       switch (event.data?.type) {
+        case "@obi/close":
+          setObiModalOpen(false);
+          break;
         case "@obi/sign-and-broadcast-transaction-response":
           resolveRef.current?.(event.data.payload);
           resolveRef.current = null;
@@ -104,22 +107,6 @@ export function ObiModalProvider({ children }: { children: ReactNode }) {
         }}
         ref={iframeRef}
       />
-      <button
-        onClick={() => {
-          setObiModalOpen(false);
-        }}
-        style={{
-          position: "fixed",
-          zIndex: 99999,
-          top: "50%",
-          left: "50%",
-          marginLeft: "195px",
-          marginTop: "-422px",
-          visibility: obiModalOpen ? "visible" : "hidden",
-        }}
-      >
-        X
-      </button>
     </ObiModalContext.Provider>
   );
 }
