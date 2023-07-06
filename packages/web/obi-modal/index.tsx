@@ -47,7 +47,7 @@ export function ObiModalProvider({ children }: { children: ReactNode }) {
     };
   }, []);
 
-  const iframeUrl = 'https://obi-wallet-modal-web-git-feature-modal-obi-money.vercel.app/osmosis';
+  const iframeUrl = 'https://obi-wallet-modal-web.vercel.app/osmosis';
 
   return (
     <ObiModalContext.Provider
@@ -79,14 +79,14 @@ export function ObiModalProvider({ children }: { children: ReactNode }) {
         style={
           obiModalOpen
             ? {
-                backgroundColor: "rgba(0, 0, 0, 0.5)",
-                position: "fixed",
-                width: "100vw",
-                height: "100vh",
-                zIndex: 900,
-                left: 0,
-                top: 0,
-              }
+              backgroundColor: "rgba(0, 0, 0, 0.5)",
+              position: "fixed",
+              width: "100vw",
+              height: "100vh",
+              zIndex: 900,
+              left: 0,
+              top: 0,
+            }
             : undefined
         }
       />
